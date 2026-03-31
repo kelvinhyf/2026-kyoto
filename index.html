@@ -33,6 +33,9 @@
             .map-section { height: 100vh !important; width: 60%; order: 2; }
             .list-section { height: 100vh !important; width: 40%; max-width: 450px; order: 1; z-index: 10; }
         }
+
+        /* 自訂 Leaflet popup 樣式 */
+        .leaflet-popup-content-wrapper { border-radius: 8px; font-family: 'Noto Sans TC', sans-serif; }
     </style>
 </head>
 <body class="bg-gray-100 h-screen overflow-hidden">
@@ -94,9 +97,10 @@
                             📍 導航
                         </button>
                         
+                        <!-- Tabelog按鈕轉咗橙色 -->
                         <a v-if="item.searchLink" :href="item.searchLink" target="_blank" 
-                           class="flex-1 bg-white text-gray-600 border border-gray-200 py-2 rounded-lg text-xs font-bold active:bg-gray-50 transition shadow-sm flex justify-center items-center gap-1">
-                           🔗 Tabelog
+                           class="flex-1 bg-orange-50 text-orange-600 border border-orange-200 py-2 rounded-lg text-xs font-bold active:bg-orange-100 transition shadow-sm flex justify-center items-center gap-1">
+                           🍽️ Tabelog
                         </a>
                     </div>
                 </div>
@@ -106,10 +110,6 @@
         <!-- 地圖區塊 -->
         <div class="map-section w-full relative bg-gray-200">
             <div id="map" class="w-full h-full outline-none"></div>
-            <!-- Google Maps 版權標示 -->
-            <div class="absolute bottom-1 right-1 z-[400] bg-white/80 px-1 text-[10px] text-gray-600 rounded pointer-events-none font-bold">
-                 Google Maps (Leaflet)
-            </div>
         </div>
 
     </div>
@@ -123,7 +123,7 @@
                 let map = null;
                 let markers = [];
 
-                // 行程資料庫
+                // 行程資料庫 (已精準修正坐標)
                 const itinerary = ref([
                     {
                         title: "Day 1 (4/3)",
@@ -167,14 +167,14 @@
                             { time: "07:30", location: "出門口 & 搭車", tag: "交通" },
                             { time: "08:00", location: "京都站 & 買早餐", coords: [34.9858, 135.7588] },
                             { time: "08:38", location: "搭JR Hashidate特急", desc: "直達天橋立站（約 2 小時）", tag: "交通" },
-                            { time: "10:40", location: "抵達天橋立站", coords: [35.5583, 135.1914] },
-                            { time: "11:00", location: "天橋立 Viewland (飛龍觀)", tag: "景點", coords: [35.5540, 135.1923] },
-                            { time: "12:00", location: "智恩寺 & 迴旋橋", tag: "景點", coords: [35.5568, 135.1917] },
-                            { time: "12:30", location: "はしだて茶屋 (花蛤丼)", tag: "午餐", desc: "預算: <2000 yen", coords: [35.5656, 135.1903] },
-                            { time: "13:30", location: "踩單車", desc: "長 3.6 公里 大約 20-30 分鐘即可抵達北側", coords: [35.5786, 135.1945] },
-                            { time: "14:10", location: "元伊勢籠神社", tag: "景點", coords: [35.5801, 135.1950] },
-                            { time: "14:40", location: "傘松公園 (昇龍觀)", tag: "景點", coords: [35.5831, 135.1948] },
-                            { time: "15:30", location: "搭船 (12min)", desc: "回到南側的「天橋立棧橋」& 餵海鷗" },
+                            { time: "10:40", location: "抵達天橋立站", coords: [35.5562, 135.1930] },
+                            { time: "11:00", location: "天橋立 Viewland (飛龍觀)", tag: "景點", coords: [35.5529, 135.1905] },
+                            { time: "12:00", location: "智恩寺 & 迴旋橋", tag: "景點", coords: [35.5565, 135.1884] },
+                            { time: "12:30", location: "はしだて茶屋 (花蛤丼)", tag: "午餐", desc: "預算: <2000 yen", coords: [35.5598, 135.1895] },
+                            { time: "13:30", location: "踩單車", desc: "長 3.6 公里 大約 20-30 分鐘即可抵達北側", coords: [35.5695, 135.1905] },
+                            { time: "14:10", location: "元伊勢籠神社", tag: "景點", coords: [35.5824, 135.1963] },
+                            { time: "14:40", location: "傘松公園 (昇龍觀)", tag: "景點", coords: [35.5855, 135.1942] },
+                            { time: "15:30", location: "搭船 (12min)", desc: "回到南側的「天橋立棧橋」& 餵海鷗", coords: [35.5568, 135.1891] },
                             { time: "16:03", location: "搭JR Hashidate 6號回程", tag: "交通" },
                             { time: "18:07", location: "抵達京都站", coords: [34.9858, 135.7588] },
                             { time: "19:00", location: "市場小路 伊勢丹店 (京鴨)", tag: "晚餐 booked", highlight: true, searchLink: "https://tabelog.com/kyoto/A2601/A260101/26000865/", coords: [34.9858, 135.7588] }
@@ -186,8 +186,8 @@
                         summary: "搭乘嵯峨野觀光小火車遊覽嵐山，晚上欣賞二條城夜櫻光雕秀與人氣燒肉。",
                         events: [
                             { time: "08:45", location: "出門口 & 搭巴士", tag: "交通" },
-                            { time: "09:20", location: "搭JR", desc: "到馬堀站再行去トロッコ龜岡站", tag: "交通" },
-                            { time: "10:30", location: "嵯峨野觀光小火車", coords: [35.0163, 135.6811] },
+                            { time: "09:20", location: "搭JR (馬堀站)", desc: "行去トロッコ龜岡站", tag: "交通", coords: [35.0118, 135.5621] },
+                            { time: "10:30", location: "嵯峨野觀光小火車 (龜岡站)", coords: [35.0135, 135.5568] },
                             { time: "11:00", location: "嵐山竹林之道 & 野宮神社", tag: "景點", coords: [35.0168, 135.6748] },
                             { time: "11:30", location: "天龍寺", tag: "景點", coords: [35.0157, 135.6738] },
                             { time: "12:30", location: "儘 (西餐)", tag: "午餐 booked", highlight: true, desc: "預算: 4000 yen", searchLink: "https://tabelog.com/kyoto/A2601/A260403/26035295/", coords: [35.0135, 135.6775] },
@@ -227,15 +227,16 @@
                     }
                 ]);
 
-                // 初始化地圖 (與原網站寫法相同)
+                // 初始化地圖 (改用 OpenStreetMap - CartoDB 風格)
                 const initMap = () => {
                     const defaultCoords = [35.0080, 135.7674]; // 預設京都
                     map = L.map('map', { zoomControl: false }).setView(defaultCoords, 12);
                     
-                    L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+                    // 改用 CartoDB 靚靚地圖
+                    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
                         maxZoom: 20,
-                        subdomains:['mt0','mt1','mt2','mt3'],
-                        attribution: ''
+                        subdomains: 'abcd',
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OSM</a> &copy; <a href="https://carto.com/" target="_blank">CARTO</a>'
                     }).addTo(map);
 
                     L.control.zoom({ position: 'topright' }).addTo(map);
@@ -261,7 +262,7 @@
                             });
 
                             const marker = L.marker(event.coords, {icon: icon}).addTo(map)
-                                .bindPopup(`<div style="text-align:center"><b>${event.location}</b><br><span style="font-size:0.8em">${event.time}</span></div>`);
+                                .bindPopup(`<div style="text-align:center; padding: 2px;"><b>${event.location}</b><br><span style="font-size:0.8em; color:#666;">${event.time}</span></div>`);
                             markers.push(marker);
                             bounds.push(event.coords);
                         }
@@ -274,8 +275,8 @@
 
                 const handleMapClick = (coords, location) => {
                     if(map) {
-                        map.setView(coords, 14);
-                        L.popup().setLatLng(coords).setContent(`<b>${location}</b>`).openOn(map);
+                        map.setView(coords, 15); // Zoom大少少方便睇
+                        L.popup().setLatLng(coords).setContent(`<div style="text-align:center; padding: 2px;"><b>${location}</b></div>`).openOn(map);
                     }
                 };
 
